@@ -81,6 +81,11 @@ int main(int argc, char *argv[])
         if (i == options.skip) {
             omb_papi_start(&papi_eventset);
         }
+
+        apply_imbalance(options.imbalance,
+                        options.imbalance_expected,
+                        options.imbalance_variance);
+
         t_start = MPI_Wtime();
         MPI_CHECK(MPI_Barrier(MPI_COMM_WORLD));
         t_stop = MPI_Wtime();

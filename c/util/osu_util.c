@@ -426,6 +426,7 @@ int process_options (int argc, char *argv[])
             {"num-test-calls",      required_argument,  0,  't'},
             {"iterations",          required_argument,  0,  'i'},
             {"warmup",              required_argument,  0,  'x'},
+            {"imbalance",           required_argument,  0,  'I'},
             {"array-size",          required_argument,  0,  'a'},
             {"sync-option",         required_argument,  0,  's'},
             {"win-options",         required_argument,  0,  'w'},
@@ -479,11 +480,11 @@ int process_options (int argc, char *argv[])
                     options.subtype == SCATTER ||
                     options.subtype == ALLTOALL ||
                     options.subtype == BCAST ) {
-                optstring = "+:hvfm:i:x:M:a:cu:G:D:P:";
+                optstring = "+:hvfm:i:x:I:M:a:cu:G:D:P:";
                 if (accel_enabled) {
                     optstring = (CUDA_KERNEL_ENABLED) ?
-                        "+:d:hvfm:i:x:M:r:a:cu:G:D:" :
-                        "+:d:hvfm:i:x:M:a:cu:G:D:";
+                        "+:d:hvfm:i:x:I:M:r:a:cu:G:D:" :
+                        "+:d:hvfm:i:x:I:M:a:cu:G:D:";
                 }
                 long_options[omb_long_options_itr].name = "ddt";
                 long_options[omb_long_options_itr].has_arg = required_argument;
@@ -491,47 +492,47 @@ int process_options (int argc, char *argv[])
                 long_options[omb_long_options_itr].val = 'D';
             } else {
                 if (options.subtype == BARRIER) {
-                    optstring = "+:hvfm:i:x:M:a:u:G:P:";
+                    optstring = "+:hvfm:i:x:I:M:a:u:G:P:";
                     if (accel_enabled) {
                         optstring = (CUDA_KERNEL_ENABLED) ?
-                            "+:d:hvfm:i:x:M:r:a:u:G:" :
-                            "+:d:hvfm:i:x:M:a:u:G:";
+                            "+:d:hvfm:i:x:I:M:r:a:u:G:" :
+                            "+:d:hvfm:i:x:I:M:a:u:G:";
                     }
                 } else {
-                    optstring = "+:hvfm:i:x:M:a:cu:G:P:";
+                    optstring = "+:hvfm:i:x:I:M:a:cu:G:P:";
                     if (accel_enabled) {
                         optstring = (CUDA_KERNEL_ENABLED) ?
-                            "+:d:hvfm:i:x:M:r:a:cu:G:" :
-                            "+:d:hvfm:i:x:M:a:cu:G:";
+                            "+:d:hvfm:i:x:I:M:r:a:cu:G:" :
+                            "+:d:hvfm:i:x:I:M:a:cu:G:";
                     }
                 }
             }
         } else if (options.subtype == NBC) {
-            optstring = "+:hvfm:i:x:M:t:a:G:P:";
+            optstring = "+:hvfm:i:x:I:M:t:a:G:P:";
             if (accel_enabled) {
-                optstring = (CUDA_KERNEL_ENABLED) ? "+:d:hvfm:i:x:M:t:r:a:G:" :
-                    "+:d:hvfm:i:x:M:t:a:G:";
+                optstring = (CUDA_KERNEL_ENABLED) ? "+:d:hvfm:i:x:I:M:t:r:a:G:" :
+                    "+:d:hvfm:i:x:I:M:t:a:G:";
             }
         } else { /* Non-Blocking */
             if (options.subtype == NBC_GATHER ||
                     options.subtype == NBC_ALLTOALL ||
                     options.subtype == NBC_SCATTER ||
                     options.subtype == NBC_BCAST) {
-                optstring = "+:hvfm:i:x:M:t:a:cu:G:D:P:";
+                optstring = "+:hvfm:i:x:I:M:t:a:cu:G:D:P:";
                 if (accel_enabled) {
                     optstring = (CUDA_KERNEL_ENABLED) ?
-                        "+:d:hvfm:i:x:M:t:r:a:cu:G:D:" :
-                        "+:d:hvfm:i:x:M:t:a:cu:G:D:";
+                        "+:d:hvfm:i:x:I:M:t:r:a:cu:G:D:" :
+                        "+:d:hvfm:i:x:I:M:t:a:cu:G:D:";
                 }
                 long_options[omb_long_options_itr].name = "ddt";
                 long_options[omb_long_options_itr].has_arg = required_argument;
                 long_options[omb_long_options_itr].flag = 0;
                 long_options[omb_long_options_itr].val = 'D';
             } else {
-                optstring = "+:hvfm:i:x:M:t:a:cu:G:P:";
+                optstring = "+:hvfm:i:x:I:M:t:a:cu:G:P:";
                 if (accel_enabled) {
-                    optstring = (CUDA_KERNEL_ENABLED) ? "+:d:hvfm:i:x:M:t:r:a:cu:G:"
-                        : "+:d:hvfm:i:x:M:t:a:cu:G:";
+                    optstring = (CUDA_KERNEL_ENABLED) ? "+:d:hvfm:i:x:I:M:t:r:a:cu:G:"
+                        : "+:d:hvfm:i:x:I:M:t:a:cu:G:";
                 }
             }
         }
@@ -577,6 +578,7 @@ int process_options (int argc, char *argv[])
     options.print_rate = 1;
     options.validate = 0;
     options.papi_enabled = 0;
+    options.imbalance = NO_IMBALANCE;
     options.buf_num = SINGLE;
     options.omb_enable_ddt = 0;
     options.ddt_type_parameters.block_length = OMB_DDT_BLOCK_LENGTH_DEFAULT;
@@ -712,6 +714,14 @@ int process_options (int argc, char *argv[])
             case 'x':
                 if (set_num_warmup(atoi(optarg))) {
                     bad_usage.message = "Invalid Number of Warmup Iterations";
+                    bad_usage.optarg = optarg;
+
+                    return PO_BAD_USAGE;
+                }
+                break;
+            case 'I':
+                if (PO_OKAY != set_imbalance(optarg)) {
+                    bad_usage.message = "Invalid Imbalance Specification";
                     bad_usage.optarg = optarg;
 
                     return PO_BAD_USAGE;
@@ -1107,6 +1117,80 @@ void wtime(double *t)
     gettimeofday(&tv, 0);
     if (sec < 0) sec = tv.tv_sec;
     *t = (tv.tv_sec - sec)*1.0e+6 + tv.tv_usec;
+}
+
+/* Set the initial accelerator type */
+int set_imbalance(char *distribution_info)
+{
+    char *s = strtok(distribution_info, ":");
+    if (!s) {
+        return PO_BAD_USAGE;
+    }
+
+    switch (*s) {
+        case 'U':
+            options.imbalance          = UNIFORM;
+            options.imbalance_expected = atol(strtok(NULL, ":"));
+            options.imbalance_variance = 0;
+            break;
+        case 'G':
+            options.imbalance          = GAUSSIAN;
+            options.imbalance_expected = atol(strtok(NULL, ":"));
+            options.imbalance_variance = atol(strtok(NULL, ":"));
+            break;
+        default:
+            return PO_BAD_USAGE;
+    }
+
+    if ((options.imbalance_expected < 0) ||
+        (options.imbalance_variance < 0)) {
+        return PO_BAD_USAGE;
+    }
+
+    return PO_OKAY;
+}
+
+static inline long sample_uniform(unsigned expected_value)
+{
+    return ((double) rand() / (RAND_MAX)) * 2.0 * expected_value;
+}
+
+static long sample_gaussian(unsigned expected_value, unsigned variance)
+{
+    double u = sample_uniform(1) - 1;
+    double v = sample_uniform(1) - 1;
+    double r = u * u + v * v;
+    if (r == 0 || r > 1) {
+        return sample_gaussian(expected_value, variance);
+    }
+
+    return (variance * u * sqrt(-2 * log(r) / r)) + expected_value;
+}
+
+void apply_imbalance(enum distribution_type imbalance,
+                     unsigned imbalance_expected,
+                     unsigned imbalance_variance)
+{
+    long wait_time_ns;
+    struct timespec sleep_req;
+
+    switch (imbalance) {
+        case UNIFORM:
+            wait_time_ns = sample_uniform(imbalance_expected);
+            break;
+
+        case GAUSSIAN:
+            wait_time_ns = sample_gaussian(imbalance_expected, imbalance_variance);
+            break;
+
+        default:
+            return;
+    }
+
+    sleep_req.tv_sec  = 0;
+    sleep_req.tv_nsec = wait_time_ns;
+
+    clock_nanosleep(CLOCK_REALTIME, 0, &sleep_req, NULL);
 }
 
 /* vi:set sw=4 sts=4 tw=80: */

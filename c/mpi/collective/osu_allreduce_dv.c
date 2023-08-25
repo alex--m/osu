@@ -136,6 +136,10 @@ int main(int argc, char *argv[])
 
             MPI_CHECK(MPI_Barrier(MPI_COMM_WORLD));
 
+            apply_imbalance(options.imbalance,
+                            options.imbalance_expected,
+                            options.imbalance_variance);
+
             t_start = MPI_Wtime();
             MPI_CHECK(MPI_Allreduce(sendbuf, recvbuf, size,
                 MPI_FLOAT, MPI_SUM, MPI_COMM_WORLD));
@@ -145,7 +149,7 @@ int main(int argc, char *argv[])
 
             if(i >= options.skip && i < options.iterations + options.skip) {
                 timer+=t_stop-t_start;
-                
+
                 if(options.graph && 0 == rank)
                     omb_graph_data->data[i - options.skip] =
                         (t_stop - t_start) * 1e6;
@@ -168,11 +172,11 @@ int main(int argc, char *argv[])
             if(rank == 0) {
                 for(int r = 0; r < numprocs; r++) {
                     char rank_str[] = "000";
-                    
+
                     if(r >= 100) rank_str[0] = '0' + (r / 100);
                     if(r >= 10) rank_str[1] = '0' + (r / 10 % 10);
                     rank_str[2] = '0' + (r % 10);
-                    
+
                     printf("%s: %d %.*f\n", rank_str, size * sizeof(float),
                         FLOAT_PRECISION, lats[r]);
                 }

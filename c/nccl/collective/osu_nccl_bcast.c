@@ -93,6 +93,10 @@ int main(int argc, char *argv[])
 
         timer=0.0;
         for (i=0; i < options.iterations + options.skip ; i++) {
+            apply_imbalance(options.imbalance,
+                            options.imbalance_expected,
+                            options.imbalance_variance);
+
             t_start = MPI_Wtime();
             NCCL_CHECK(ncclBroadcast(buffer, buffer, size, ncclChar, 0, 
                     nccl_comm, nccl_stream));

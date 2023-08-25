@@ -93,6 +93,7 @@ int main(int argc, char *argv[])
         if (i == options.skip) {
             omb_papi_start(&papi_eventset);
         }
+
         t_start = MPI_Wtime();
         MPI_CHECK(MPI_Ibarrier(MPI_COMM_WORLD, &request));
         MPI_CHECK(MPI_Wait(&request,&status));
@@ -120,6 +121,10 @@ int main(int argc, char *argv[])
     test_time = 0.0, test_total = 0.0;
 
     for (i = 0; i < options.iterations + options.skip; i++) {
+            apply_imbalance(options.imbalance,
+                            options.imbalance_expected,
+                            options.imbalance_variance);
+
             t_start = MPI_Wtime();
 
             init_time = MPI_Wtime();

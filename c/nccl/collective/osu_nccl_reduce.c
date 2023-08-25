@@ -116,6 +116,11 @@ int main(int argc, char *argv[])
                 }
                 MPI_CHECK(MPI_Barrier(MPI_COMM_WORLD));
             }
+
+            apply_imbalance(options.imbalance,
+                            options.imbalance_expected,
+                            options.imbalance_variance);
+
             t_start = MPI_Wtime();
             NCCL_CHECK(ncclReduce(sendbuf, recvbuf, size, ncclInt32, ncclSum, 0,
                     nccl_comm, nccl_stream));

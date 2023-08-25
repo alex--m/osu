@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
         MPI_CHECK(MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE));
     }
     set_buffer(buffer, options.accel, 1, options.max_message_size);
-    
+
     char env_warm[] = {"OSU_WARM=_\0____"};
     char env_iter[] = {"OSU_ITER=_\0____"};
     char env_icnt[] = {"OSU_ICNT=_\0____"};
@@ -108,7 +108,7 @@ int main(int argc, char *argv[])
         // May god have mercy on my soul
         * (int *) (env_warm+strlen("OSU_WARM=")+2) = options.skip;
         * (int *) (env_iter+strlen("OSU_ITER=")+2) = options.iterations + warmdown;
-        
+
         omb_graph_allocate_and_get_data_buffer(&omb_graph_data,
                 &omb_graph_options, size, options.iterations);
 
@@ -125,15 +125,19 @@ int main(int argc, char *argv[])
                 for(j = 0; j < size; j++)
                     buffer[j] = (char) (uint8_t) (i + j);
             }
-            
+
             MPI_CHECK(MPI_Barrier(MPI_COMM_WORLD));
-            
+
+            apply_imbalance(options.imbalance,
+                            options.imbalance_expected,
+                            options.imbalance_variance);
+
             t_start = MPI_Wtime();
             MPI_CHECK(MPI_Bcast(buffer, size, MPI_CHAR, root, MPI_COMM_WORLD));
             t_stop = MPI_Wtime();
-            
+
             MPI_CHECK(MPI_Barrier(MPI_COMM_WORLD));
-            
+
             if(i >= options.skip && i < options.iterations + options.skip) {
                 timer+=t_stop-t_start;
 
@@ -141,31 +145,31 @@ int main(int argc, char *argv[])
                     omb_graph_data->data[i - options.skip] =
                         (t_stop - t_start) * 1e6;
             }
-            
+
             if (i == options.iterations + options.skip)
                 omb_papi_stop_and_print(&papi_eventset, size);
-            
+
             root = (root + 1) % numprocs;
         }
-        
+
         // -------
-        
+
         latency = (timer * 1e6) / options.iterations;
-        
+
         if(getenv("LAT_ALL") != NULL) {
             double lats[numprocs];
-            
+
             MPI_CHECK(MPI_Gather(&latency, 1, MPI_DOUBLE,
                 lats, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD));
-            
+
             if(rank == 0) {
                 for(int r = 0; r < numprocs; r++) {
                     char rank_str[] = "000";
-                    
+
                     if(r >= 100) rank_str[0] = '0' + (r / 100);
                     if(r >= 10) rank_str[1] = '0' + (r / 10 % 10);
                     rank_str[2] = '0' + (r % 10);
-                    
+
                     printf("%s: %d %.*f\n", rank_str, size,
                         FLOAT_PRECISION, lats[r]);
                 }

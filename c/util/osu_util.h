@@ -285,6 +285,12 @@ enum SYNC {
 #endif
 };
 
+enum distribution_type {
+    NO_IMBALANCE,
+    UNIFORM,
+    GAUSSIAN
+};
+
 enum buffer_num {
     SINGLE,
     MULTIPLE
@@ -349,6 +355,9 @@ struct options_t {
     int print_rate;
     int pairs;
     int validate;
+    enum distribution_type imbalance;
+    unsigned imbalance_expected;
+    unsigned imbalance_variance;
     enum buffer_num buf_num;
     int graph;
     int graph_output_term;
@@ -379,6 +388,10 @@ extern int process_one_sided_options (int opt, char *arg);
 int process_options (int argc, char *argv[]);
 int omb_ddt_process_options(char *optarg, struct bad_usage_t *bad_usage);
 int setAccel(char);
+int set_imbalance(char*);
+void apply_imbalance(enum distribution_type imbalance,
+                     unsigned imbalance_expected,
+                     unsigned imbalance_variance);
 
 /*
  * Set Benchmark Properties

@@ -76,7 +76,7 @@ int main(int argc, char *argv[])
 
     for(size=options.min_message_size; size <= options.max_message_size; size *= 2) {
         if(size > LARGE_MESSAGE_SIZE) {
-            options.skip = options.skip_large; 
+            options.skip = options.skip_large;
             options.iterations = options.iterations_large;
         }
 
@@ -87,13 +87,17 @@ int main(int argc, char *argv[])
 					buffer[k] = (char) (uint8_t) (i + k);
 			} else
 				memset(buffer, 0, size);
-			
+
 			MPI_CHECK(MPI_Barrier(MPI_COMM_WORLD));
-			
+
+            apply_imbalance(options.imbalance,
+                            options.imbalance_expected,
+                            options.imbalance_variance);
+
             t_start = MPI_Wtime();
             MPI_CHECK(MPI_Bcast(buffer, size, MPI_CHAR, 0, MPI_COMM_WORLD));
             t_stop = MPI_Wtime();
-            
+
             if(rank != 0) {
 				for(k = 0; k < size; k++)
 					assert((uint8_t) buffer[k] == (uint8_t) (i + k));

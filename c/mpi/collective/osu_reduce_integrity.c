@@ -105,6 +105,10 @@ int main(int argc, char *argv[])
 
             MPI_CHECK(MPI_Barrier(MPI_COMM_WORLD));
 
+            apply_imbalance(options.imbalance,
+                            options.imbalance_expected,
+                            options.imbalance_variance);
+
             t_start = MPI_Wtime();
             MPI_CHECK(MPI_Reduce(sendbuf, recvbuf, size,
                 MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD));
@@ -114,17 +118,17 @@ int main(int argc, char *argv[])
 
             if(i >= options.skip)
                 timer+=t_stop-t_start;
-			
+
 			if(rank == 0) {
 				for(k = 0; k < size; k++) {
 					// Sum of k for k in [1,n] is 1/2*k*(k+1)
 					int expected = (i * (size + k)) * (numprocs * (numprocs + 1) / 2);
 					int v = (int) recvbuf[k];
-	
+
 					if(expected != v) {
 						printf("Error: size = %zu, i = %d k = %d. Expected %d, got %d. sendbuf[%d] is %d\n",
 							size * sizeof(int), i, k, expected, v, k, sendbuf[k]);
-	
+
 						MPI_Finalize();
 						exit(1);
 					}

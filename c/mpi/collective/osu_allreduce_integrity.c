@@ -105,6 +105,10 @@ int main(int argc, char *argv[])
 
             MPI_CHECK(MPI_Barrier(MPI_COMM_WORLD));
 
+            apply_imbalance(options.imbalance,
+                            options.imbalance_expected,
+                            options.imbalance_variance);
+
             t_start = MPI_Wtime();
             MPI_CHECK(MPI_Allreduce(sendbuf, recvbuf, size,
                 MPI_INT, MPI_SUM, MPI_COMM_WORLD));

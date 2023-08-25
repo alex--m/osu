@@ -370,6 +370,10 @@ void print_help_message (int rank)
     fprintf(stdout, "  -i, --iterations ITER       set iterations per message size to ITER (default 1000 for small\n");
     fprintf(stdout, "                              messages, 100 for large messages)\n");
     fprintf(stdout, "  -x, --warmup ITER           set number of warmup iterations to skip before timing (default 200)\n");
+    fprintf(stdout, "  -I, --imbalance [UG]:EXP:VR introduce imbalance by distribution function (Uniform or Gaussian), \n");
+    fprintf(stdout, "                              with expected and variance values in nano-seconds. Examples:\n");
+    fprintf(stdout, "                              -I U:1\n");
+    fprintf(stdout, "                              -I G:300:100\n");
 
     if (options.subtype == BW) {
         fprintf(stdout, "  -W, --window-size SIZE      set number of messages to send before synchronization (default 64)\n");

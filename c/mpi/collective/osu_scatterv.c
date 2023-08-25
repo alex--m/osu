@@ -146,6 +146,10 @@ int main(int argc, char *argv[])
                 MPI_CHECK(MPI_Barrier(MPI_COMM_WORLD));
             }
 
+            apply_imbalance(options.imbalance,
+                            options.imbalance_expected,
+                            options.imbalance_variance);
+
             t_start = MPI_Wtime();
             MPI_CHECK(MPI_Scatterv(sendbuf, sendcounts, sdispls,
                         omb_ddt_datatype, recvbuf, omb_ddt_size,

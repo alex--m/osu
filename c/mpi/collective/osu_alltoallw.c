@@ -118,7 +118,7 @@ int main (int argc, char *argv[])
         MPI_CHECK(MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE));
     }
     set_buffer(recvbuf, options.accel, 0, bufsize);
-    
+
     print_preamble(rank);
 
     for (size = options.min_message_size; size <= options.max_message_size;
@@ -157,6 +157,10 @@ int main (int argc, char *argv[])
                 }
                 MPI_CHECK(MPI_Barrier(MPI_COMM_WORLD));
             }
+
+            apply_imbalance(options.imbalance,
+                            options.imbalance_expected,
+                            options.imbalance_variance);
 
             t_start = MPI_Wtime();
             MPI_CHECK(MPI_Alltoallw(sendbuf, sendcounts, sdispls, stypes,
