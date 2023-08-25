@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
     double latency = 0.0, t_start = 0.0, t_stop = 0.0;
     double timer=0.0;
     double avg_time = 0.0, max_time = 0.0, min_time = 0.0;
-    float *sendbuf, *recvbuf;
+    int *sendbuf, *recvbuf;
     int po_ret;
     int errors = 0;
     size_t bufsize;
@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
     set_header(HEADER);
     set_benchmark_name("nccl_reduce");
     po_ret = process_options(argc, argv);
-    
+
     IS_ACCELERATOR_CUDA();
     if (init_accel()) {
         fprintf(stderr, "Error initializing device\n");
@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
         options.max_message_size = options.max_mem_limit;
     }
 
-    options.min_message_size /= sizeof(float);
+    options.min_message_size /= sizeof(int);
     if (options.min_message_size < MIN_MESSAGE_SIZE) {
         options.min_message_size = MIN_MESSAGE_SIZE;
     }
@@ -80,7 +80,7 @@ int main(int argc, char *argv[])
     allocate_nccl_stream();
     create_nccl_comm(numprocs, rank);
 
-    bufsize = sizeof(float)*(options.max_message_size/sizeof(float));
+    bufsize = sizeof(int)*(options.max_message_size/sizeof(int));
     if (allocate_memory_coll((void**)&recvbuf, bufsize,
                 options.accel)) {
         fprintf(stderr, "Could Not Allocate Memory [rank %d]\n", rank);
@@ -88,7 +88,7 @@ int main(int argc, char *argv[])
     }
     set_buffer(recvbuf, options.accel, 1, bufsize);
 
-    bufsize = sizeof(float)*(options.max_message_size/sizeof(float));
+    bufsize = sizeof(int)*(options.max_message_size/sizeof(int));
     if (allocate_memory_coll((void**)&sendbuf, bufsize,
                 options.accel)) {
         fprintf(stderr, "Could Not Allocate Memory [rank %d]\n", rank);
@@ -98,7 +98,7 @@ int main(int argc, char *argv[])
 
     print_preamble(rank);
 
-    for (size=options.min_message_size; size*sizeof(float) <= options.max_message_size; size *= 2) {
+    for (size=options.min_message_size; size*sizeof(int) <= options.max_message_size; size *= 2) {
 
         if (size > LARGE_MESSAGE_SIZE) {
             options.skip = options.skip_large;
@@ -110,14 +110,14 @@ int main(int argc, char *argv[])
         timer=0.0;
         for (i=0; i < options.iterations + options.skip ; i++) {
             if (options.validate) {
-                set_buffer_float(sendbuf, 1, size, i, options.accel);
+                set_buffer_int(sendbuf, 1, size, i, options.accel);
                 if (rank == 0) {
-                    set_buffer_float(recvbuf, 0, size, i, options.accel);
+                    set_buffer_int(recvbuf, 0, size, i, options.accel);
                 }
                 MPI_CHECK(MPI_Barrier(MPI_COMM_WORLD));
             }
             t_start = MPI_Wtime();
-            NCCL_CHECK(ncclReduce(sendbuf, recvbuf, size, ncclFloat, ncclSum, 0,
+            NCCL_CHECK(ncclReduce(sendbuf, recvbuf, size, ncclInt32, ncclSum, 0,
                     nccl_comm, nccl_stream));
             CUDA_STREAM_SYNCHRONIZE(nccl_stream);
             t_stop=MPI_Wtime();
@@ -146,9 +146,9 @@ int main(int argc, char *argv[])
         avg_time = avg_time/numprocs;
 
         if (options.validate)
-            print_stats_validate(rank, size * sizeof(float), avg_time, min_time, max_time, errors);
+            print_stats_validate(rank, size * sizeof(int), avg_time, min_time, max_time, errors);
         else
-            print_stats(rank, size * sizeof(float), avg_time, min_time, max_time);
+            print_stats(rank, size * sizeof(int), avg_time, min_time, max_time);
 
         MPI_CHECK(MPI_Barrier(MPI_COMM_WORLD));
     }

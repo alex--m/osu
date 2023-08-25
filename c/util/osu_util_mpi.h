@@ -90,6 +90,8 @@ void set_buffer_validation(void* s_buf, void* r_buf, size_t size,
                            enum accel_type type, int iter);
 void set_buffer_float (float * buffer, int is_send_buf, size_t size, int iter,
                        enum accel_type type);
+void set_buffer_int (int* buffer, int is_send_buf, size_t size, int iter,
+                       enum accel_type type);
 void set_buffer_char (char * buffer, int is_send_buf, size_t size, int rank,
                       int num_procs, enum accel_type type, int iter);
 void check_mem_limit(int numprocs); 
@@ -141,7 +143,7 @@ int omb_get_local_rank();
 #define ERROR_DELTA 0.001
 uint8_t validate_data(void* r_buf, size_t size, int num_procs,
                       enum accel_type type, int iter);
-int validate_reduction(float * buffer, size_t size, int iter, int num_procs,
+int validate_reduction(int *buffer, size_t size, int iter, int num_procs,
                        enum accel_type type);
 int validate_collective(char *buffer, size_t size, int value1, int value2,
                         enum accel_type type, int itr);

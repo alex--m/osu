@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
     double latency = 0.0, t_start = 0.0, t_stop = 0.0;
     double timer=0.0;
     double avg_time = 0.0, max_time = 0.0, min_time = 0.0;
-    float *sendbuf, *recvbuf;
+    int *sendbuf, *recvbuf;
     int po_ret;
     int errors = 0, local_errors = 0;
     size_t bufsize;
@@ -90,7 +90,7 @@ int main(int argc, char *argv[])
     print_preamble(rank);
     omb_papi_init(&papi_eventset);
 
-    for (size = options.min_message_size; size * sizeof(float) <=
+    for (size = options.min_message_size; size * sizeof(int) <=
             options.max_message_size; size *= 2) {
 
         if (size > LARGE_MESSAGE_SIZE) {
@@ -99,7 +99,7 @@ int main(int argc, char *argv[])
         }
 
         omb_graph_allocate_and_get_data_buffer(&omb_graph_data,
-                &omb_graph_options, size * sizeof(float), options.iterations);
+                &omb_graph_options, size * sizeof(int), options.iterations);
         MPI_CHECK(MPI_Barrier(MPI_COMM_WORLD));
 
         timer = 0.0;
@@ -112,14 +112,14 @@ int main(int argc, char *argv[])
                 set_buffer_validation(sendbuf, recvbuf, size, options.accel, i);
                 for (j = 0; j < options.warmup_validation; j++) {
                     MPI_CHECK(MPI_Barrier(MPI_COMM_WORLD));
-                    MPI_CHECK(MPI_Allreduce(sendbuf, recvbuf, size, MPI_FLOAT,
+                    MPI_CHECK(MPI_Allreduce(sendbuf, recvbuf, size, MPI_INT,
                                 MPI_SUM, MPI_COMM_WORLD ));
                 }
                 MPI_CHECK(MPI_Barrier(MPI_COMM_WORLD));
             }
 
             t_start = MPI_Wtime();
-            MPI_CHECK(MPI_Allreduce(sendbuf, recvbuf, size, MPI_FLOAT, MPI_SUM,
+            MPI_CHECK(MPI_Allreduce(sendbuf, recvbuf, size, MPI_INT, MPI_SUM,
                         MPI_COMM_WORLD ));
             t_stop = MPI_Wtime();
             MPI_CHECK(MPI_Barrier(MPI_COMM_WORLD));
@@ -137,7 +137,7 @@ int main(int argc, char *argv[])
                 }
             }
         }
-        omb_papi_stop_and_print(&papi_eventset, size * sizeof(float));
+        omb_papi_stop_and_print(&papi_eventset, size * sizeof(int));
         latency = (double)(timer * 1e6) / options.iterations;
 
         MPI_CHECK(MPI_Reduce(&latency, &min_time, 1, MPI_DOUBLE, MPI_MIN, 0,
@@ -153,10 +153,10 @@ int main(int argc, char *argv[])
         }
 
         if (options.validate) {
-            print_stats_validate(rank, size * sizeof(float), avg_time, min_time,
+            print_stats_validate(rank, size * sizeof(int), avg_time, min_time,
                     max_time, errors);
         } else {
-            print_stats(rank, size * sizeof(float), avg_time, min_time,
+            print_stats(rank, size * sizeof(int), avg_time, min_time,
                     max_time);
         }
         if (options.graph && 0 == rank) {

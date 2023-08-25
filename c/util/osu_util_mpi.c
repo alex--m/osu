@@ -1112,10 +1112,8 @@ void set_buffer_validation(void* s_buf, void* r_buf, size_t size,
                             int rank, numprocs;
                             MPI_CHECK(MPI_Comm_rank(MPI_COMM_WORLD, &rank));
                             MPI_CHECK(MPI_Comm_size(MPI_COMM_WORLD, &numprocs));
-                            set_buffer_float(s_buf, 1, size, iter,
-                                    options.accel);
-                            set_buffer_float(r_buf, 0, size, iter,
-                                    options.accel);
+                            set_buffer_int(s_buf, 1, size, iter, options.accel);
+                            set_buffer_int(r_buf, 0, size, iter, options.accel);
                         break;
                     }
                     case SCATTER:
@@ -1187,6 +1185,44 @@ void set_buffer_float (float* buffer, int is_send_buf, size_t size, int iter,
     } else {
         for (i = 0; i < num_elements; i++) {
             temp_buffer[i] = 0.0;
+        }
+    }
+    switch (type) {
+        case NONE:
+            memcpy((void *)buffer, (void *)temp_buffer, size * sizeof(float));
+            break;
+        case CUDA:
+        case MANAGED:
+#ifdef _ENABLE_CUDA_
+            CUDA_CHECK(cudaMemcpy((void *)buffer, (void *)temp_buffer,
+                       size * sizeof(float), cudaMemcpyHostToDevice));
+            CUDA_CHECK(cudaDeviceSynchronize());
+#endif
+            break;
+        default:
+            break;
+    }
+    free(temp_buffer);
+}
+
+void set_buffer_int (int* buffer, int is_send_buf, size_t size, int iter,
+                       enum accel_type type)
+{
+    if (NULL == buffer) {
+        return;
+    }
+
+    int i = 0, j = 0;
+    int num_elements = size;
+    int *temp_buffer = malloc(size * sizeof(float));
+    if (is_send_buf) {
+        for (i = 0; i < num_elements; i++) {
+            j = (i % 100);
+            temp_buffer[i] = (j + 1) * (iter + 1);
+        }
+    } else {
+        for (i = 0; i < num_elements; i++) {
+            temp_buffer[i] = 0;
         }
     }
     switch (type) {
@@ -1325,8 +1361,7 @@ uint8_t validate_data(void* r_buf, size_t size, int num_procs,
                 {
                     int numprocs;
                     MPI_CHECK(MPI_Comm_size(MPI_COMM_WORLD, &numprocs));
-                    return validate_reduction(r_buf, size, iter, numprocs,
-                            options.accel);
+                    return validate_reduction(r_buf, size, iter, numprocs, options.accel);
                 }
                 break;
             case ALLTOALL:
@@ -1428,17 +1463,17 @@ int validate_reduce_scatter(float *buffer, size_t size, int* recvcounts,
 
 }
 
-int validate_reduction(float *buffer, size_t size, int iter, int num_procs,
+int validate_reduction(int *buffer, size_t size, int iter, int num_procs,
                        enum accel_type type)
 {
     int i = 0, j = 0, errors = 0;
-    float *expected_buffer = malloc(size * sizeof(float));
-    float *temp_buffer = malloc(size * sizeof(float));
+    int *expected_buffer = malloc(size * sizeof(int));
+    int *temp_buffer = malloc(size * sizeof(int));
     int num_elements = size;
 
     switch (type) {
         case NONE:
-            memcpy((void *)temp_buffer, (void *)buffer, size * sizeof(float));
+            memcpy((void *)temp_buffer, (void *)buffer, size * sizeof(int));
             break;
 #ifdef _ENABLE_CUDA_
         case CUDA:
@@ -1454,7 +1489,7 @@ int validate_reduction(float *buffer, size_t size, int iter, int num_procs,
 
     for (i = 0; i < num_elements; i++) {
         j = (i % 100);
-        expected_buffer[i] = (j + 1) * (iter + 1) * 1.0 * num_procs;
+        expected_buffer[i] = (j + 1) * (iter + 1) * num_procs;
         if (abs(temp_buffer[i] - expected_buffer[i]) > ERROR_DELTA) {
             errors = 1;
             break;
