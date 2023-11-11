@@ -10,8 +10,10 @@ SUFFIXES = .cu .cpp
 collectivedir = $(pkglibexecdir)/mpi/collective
 collective_PROGRAMS = osu_alltoallv osu_alltoallw osu_allgatherv osu_scatterv \
 					  osu_gatherv osu_reduce_scatter osu_barrier osu_reduce \
-					  osu_allreduce osu_alltoall osu_bcast osu_gather \
-					  osu_allgather osu_scatter osu_iallgather osu_ibcast \
+					  osu_reduce_integrity osu_reduce_dv osu_allreduce \
+					  osu_allreduce_integrity osu_allreduce_dv osu_alltoall \
+					  osu_bcast osu_bcast_integrity osu_bcast_dv osu_bcast_dv_rv \
+					  osu_gather osu_allgather osu_scatter osu_iallgather osu_ibcast \
 					  osu_ialltoall osu_ibarrier osu_igather osu_iscatter \
 					  osu_iscatterv osu_igatherv osu_iallgatherv \
 					  osu_ialltoallv osu_ialltoallw osu_ireduce osu_iallreduce \
@@ -37,8 +39,15 @@ osu_gatherv_SOURCES = osu_gatherv.c $(UTILITIES)
 osu_reduce_scatter_SOURCES = osu_reduce_scatter.c $(UTILITIES)
 osu_barrier_SOURCES = osu_barrier.c $(UTILITIES)
 osu_reduce_SOURCES = osu_reduce.c $(UTILITIES)
+osu_reduce_integrity_SOURCES = osu_reduce_integrity.c $(UTILITIES)
+osu_reduce_dv_SOURCES = osu_reduce_dv.c $(UTILITIES)
 osu_allreduce_SOURCES = osu_allreduce.c $(UTILITIES)
+osu_allreduce_integrity_SOURCES = osu_allreduce_integrity.c $(UTILITIES)
+osu_allreduce_dv_SOURCES = osu_allreduce_dv.c $(UTILITIES)
 osu_bcast_SOURCES = osu_bcast.c $(UTILITIES)
+osu_bcast_integrity_SOURCES = osu_bcast_integrity.c $(UTILITIES)
+osu_bcast_dv_SOURCES = osu_bcast_dv.c $(UTILITIES)
+osu_bcast_dv_rv_SOURCES = osu_bcast_dv_rv.c $(UTILITIES)
 osu_alltoall_SOURCES = osu_alltoall.c $(UTILITIES)
 osu_alltoallv_SOURCES = osu_alltoallv.c $(UTILITIES)
 osu_alltoallw_SOURCES = osu_alltoallw.c $(UTILITIES)
