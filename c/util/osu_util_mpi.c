@@ -371,7 +371,7 @@ void print_help_message (int rank)
     fprintf(stdout, "                              messages, 100 for large messages)\n");
     fprintf(stdout, "  -x, --warmup ITER           set number of warmup iterations to skip before timing (default 200)\n");
     fprintf(stdout, "  -I, --imbalance [UG]:EXP:VR introduce imbalance by distribution function (Uniform or Gaussian), \n");
-    fprintf(stdout, "                              with expected and variance values in nano-seconds. Examples:\n");
+    fprintf(stdout, "                              with expected and variance values in nanoseconds. Examples:\n");
     fprintf(stdout, "                              -I U:1\n");
     fprintf(stdout, "                              -I G:300:100\n");
 
@@ -1494,7 +1494,9 @@ int validate_reduction(int *buffer, size_t size, int iter, int num_procs,
     for (i = 0; i < num_elements; i++) {
         j = (i % 100);
         expected_buffer[i] = (j + 1) * (iter + 1) * num_procs;
+
         if (abs(temp_buffer[i] - expected_buffer[i]) > ERROR_DELTA) {
+printf("ERROR[%i]: temp_buffer[]=%i expected_buffer=%i\n", i, temp_buffer[i], expected_buffer[i]);
             errors = 1;
             break;
         }

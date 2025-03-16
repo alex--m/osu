@@ -35,6 +35,10 @@ int omb_graph_init(omb_graph_options_t *graph_options)
 void omb_graph_options_init(omb_graph_options_t *graph_options) 
 {
     graph_options->number_of_graphs = 0;
+
+    int seed;
+    MPI_Comm_rank(MPI_COMM_WORLD, &seed);
+    srand((unsigned)seed);
 }
 
 void omb_graph_allocate_data_buffer(omb_graph_options_t *graph_options,
