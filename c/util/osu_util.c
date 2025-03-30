@@ -1167,6 +1167,14 @@ static long sample_gaussian(unsigned expected_value, unsigned variance)
     return (variance * u * sqrt(-2 * log(r) / r)) + expected_value;
 }
 
+#ifdef _WITH_UCX_
+#define HAVE___CLEAR_CACHE 1
+#include <ucs/time/time.h>
+#define CURRENT_TIMER (ucs_time_interval_to_nsec(ucs_get_time()))
+#else
+#define CURRENT_TIMER (0)
+#endif
+
 void apply_imbalance(enum distribution_type imbalance,
                      unsigned imbalance_expected,
                      unsigned imbalance_variance)
@@ -1187,10 +1195,8 @@ void apply_imbalance(enum distribution_type imbalance,
             return;
     }
 
-    sleep_req.tv_sec  = 0;
-    sleep_req.tv_nsec = wait_time_ns;
-
-    clock_nanosleep(CLOCK_REALTIME, 0, &sleep_req, NULL);
+    double target = CURRENT_TIMER + wait_time_ns;
+    while (CURRENT_TIMER < target);
 }
 
 /* vi:set sw=4 sts=4 tw=80: */

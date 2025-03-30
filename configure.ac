@@ -122,6 +122,16 @@ AC_ARG_WITH([rocm],
                      [CPPFLAGS="-I$with_rocm/include $CPPFLAGS"
                       LDFLAGS="-L$with_rocm/lib64 -Wl,-rpath=$with_rocm/lib64 -L$with_rocm/lib -Wl,-rpath=$with_rocm/lib -lamdhip64 $LDFLAGS"])
             ])
+AC_ARG_WITH([ucx],
+            [AS_HELP_STRING([--with-ucx=@<:@UCX installation path@:>@],
+                            [Provide path to UCX installation])
+            ],
+            [AS_CASE([$with_ucx],
+                     [yes|no],
+                     [AC_DEFINE([_WITH_UCX_], [1], [UCX available])],
+                     [CPPFLAGS="-I$with_ucx/include -I$with_ucx/../src $CPPFLAGS"
+                      LDFLAGS="-L$with_ucx/lib64 -Wl,-rpath=$with_ucx/lib64 -L$with_ucx/lib -Wl,-rpath=$with_ucx/lib -lucm -lucs -luct -lucp -lucg $LDFLAGS"])
+            ])
 AC_ARG_WITH([gnuplot],
             [AS_HELP_STRING([--with-gnuplot=@<:@gnuplot installation path@:>@],
                             [Provide path to gnuplot installation])
@@ -195,7 +205,7 @@ AS_IF([test "x$enable_ncclomb" = xyes], [
                       [AC_MSG_ERROR([cannot include nccl.h])])
        AC_SEARCH_LIBS([ncclGetUniqueId], [nccl], [],
                       [AC_MSG_ERROR([cannot link with -lnccl])])
-       AC_CHECK_FUNC([ncclSend], [nccl_pt2pt=true], 
+       AC_CHECK_FUNC([ncclSend], [nccl_pt2pt=true],
                      [AC_MSG_WARN([NCCL version >= 2.7 required for point-to-point support. Disabling building NCCL point-to-point benchmarks.])])
        AC_DEFINE([_ENABLE_NCCL_], [1], [Enable NCCL])
       ])
@@ -233,6 +243,10 @@ AS_IF([test "x$build_cuda_kernels" = xyes], [
        AC_DEFINE([_ENABLE_CUDA_KERNEL_], [1], [Enable CUDA Kernel])
        ])
 
+AS_IF([test "x$enable_nextsilicon" = xyes], [
+       AC_DEFINE([_ENABLE_NEXTSILICON_], [1], [Enable NextSilicon support])
+       ])
+
 AS_CASE([$enable_papi],
         [yes], [build_papi=yes])
 
@@ -261,6 +275,7 @@ AM_CONDITIONAL([OPENACC], [test x$enable_openacc = xyes])
 AM_CONDITIONAL([ROCM], [test x$enable_rocm = xyes])
 AM_CONDITIONAL([OSHM], [test x$oshm_library = xtrue])
 AM_CONDITIONAL([MPI], [test x$mpi_library = xtrue])
+AM_CONDITIONAL([UCX], [test x$with_ucx = xyes])
 AM_CONDITIONAL([UPC], [test x$upc_compiler = xtrue])
 AM_CONDITIONAL([UPCXX], [test x$upcxx_compiler = xtrue])
 AM_CONDITIONAL([PAPI], [test x$enable_papi = xyes])
@@ -269,9 +284,9 @@ AM_CONDITIONAL([BUILD_USE_PGI], [`$CXX -V 2>&1 | grep pgc++ > /dev/null 2>&1`])
 AC_DEFINE([FIELD_WIDTH], [18], [Width of field used to report numbers])
 AC_DEFINE([FLOAT_PRECISION], [2], [Precision of reported numbers])
 
-AC_CONFIG_FILES([Makefile c/Makefile c/mpi/Makefile c/mpi/pt2pt/Makefile 
-                 c/mpi/startup/Makefile c/mpi/one-sided/Makefile 
-                 c/mpi/collective/Makefile c/openshmem/Makefile 
+AC_CONFIG_FILES([Makefile c/Makefile c/mpi/Makefile c/mpi/pt2pt/Makefile
+                 c/mpi/startup/Makefile c/mpi/one-sided/Makefile
+                 c/mpi/collective/Makefile c/openshmem/Makefile
                  c/upc/Makefile c/upcxx/Makefile c/nccl/Makefile
                  c/nccl/collective/Makefile c/nccl/pt2pt/Makefile
                ])

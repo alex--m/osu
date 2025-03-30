@@ -70,9 +70,10 @@ osu_ireduce_scatter_SOURCES = osu_ireduce_scatter.c $(UTILITIES)
 
 if EMBEDDED_BUILD
     AM_LDFLAGS =
-    AM_CPPFLAGS = -I$(top_builddir)/../src/include \
-          -I${top_srcdir}/util \
-		  -I${top_srcdir}/../src/include
+    AM_CPPFLAGS = -fopenmp \
+                  -I$(top_builddir)/../src/include \
+                  -I${top_srcdir}/util \
+                  -I${top_srcdir}/../src/include
 if BUILD_PROFILING_LIB
     AM_LDFLAGS += $(top_builddir)/../lib/lib@PMPILIBNAME@.la
 endif
