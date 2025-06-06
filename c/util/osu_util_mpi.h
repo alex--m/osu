@@ -94,7 +94,7 @@ void set_buffer_int (int* buffer, int is_send_buf, size_t size, int iter,
                        enum accel_type type);
 void set_buffer_char (char * buffer, int is_send_buf, size_t size, int rank,
                       int num_procs, enum accel_type type, int iter);
-void check_mem_limit(int numprocs); 
+void check_mem_limit(int numprocs);
 
 /*
  * CUDA Context Management
@@ -152,7 +152,7 @@ int validate_reduce_scatter(float *buffer, size_t size, int* recvcounts,
                             int iter);
 
 /*
- * DDT 
+ * DDT
  */
 #define OMB_DDT_INDEXED_MAX_LENGTH 100
 #define OMB_DDT_FILE_LINE_MAX_LENGTH 500
@@ -161,3 +161,9 @@ size_t omb_ddt_assign(MPI_Datatype *datatype, MPI_Datatype base_datatype,
 void omb_ddt_free(MPI_Datatype *datatype);
 size_t omb_ddt_get_size(size_t size);
 void omb_ddt_append_stats(size_t omb_ddt_transmit_size);
+
+static inline void int_sum(int *dst, int *src, int count) {
+        for (int i = 0; i < count; i++) {
+                dst[i] += src[i];
+        }
+}
