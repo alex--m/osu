@@ -17,7 +17,7 @@ collective_PROGRAMS = osu_alltoallv osu_alltoallw osu_allgatherv osu_scatterv \
 					  osu_ialltoall osu_ibarrier osu_igather osu_iscatter \
 					  osu_iscatterv osu_igatherv osu_iallgatherv \
 					  osu_ialltoallv osu_ialltoallw osu_ireduce osu_iallreduce \
-					  osu_ireduce_scatter
+					  osu_ireduce_scatter osu_non_mpi_tree_reduce osu_non_mpi_collaborative_reduce
 
 AM_CFLAGS = -I${top_srcdir}/c/util
 
@@ -67,6 +67,8 @@ osu_iscatterv_SOURCES = osu_iscatterv.c $(UTILITIES)
 osu_ireduce_SOURCES = osu_ireduce.c $(UTILITIES)
 osu_iallreduce_SOURCES = osu_iallreduce.c $(UTILITIES)
 osu_ireduce_scatter_SOURCES = osu_ireduce_scatter.c $(UTILITIES)
+osu_non_mpi_tree_reduce_SOURCES = osu_non_mpi_tree_reduce.c $(UTILITIES)
+osu_non_mpi_collaborative_reduce_SOURCES = osu_non_mpi_collaborative_reduce.c $(UTILITIES)
 
 if EMBEDDED_BUILD
     AM_LDFLAGS =
