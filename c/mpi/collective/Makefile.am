@@ -17,9 +17,11 @@ collective_PROGRAMS = osu_alltoallv osu_alltoallw osu_allgatherv osu_scatterv \
 					  osu_ialltoall osu_ibarrier osu_igather osu_iscatter \
 					  osu_iscatterv osu_igatherv osu_iallgatherv \
 					  osu_ialltoallv osu_ialltoallw osu_ireduce osu_iallreduce \
-					  osu_ireduce_scatter osu_non_mpi_tree_reduce osu_non_mpi_collaborative_reduce
+					  osu_ireduce_scatter osu_non_mpi_tree_reduce \
+					  osu_non_mpi_collaborative_reduce osu_openmp_reduce
 
 AM_CFLAGS = -I${top_srcdir}/c/util
+AM_CXXFLAGS = -I${top_srcdir}/c/util
 
 UTILITIES = ../../util/osu_util.c ../../util/osu_util.h \
 ../../util/osu_util_mpi.c ../../util/osu_util_mpi.h \
@@ -69,6 +71,7 @@ osu_iallreduce_SOURCES = osu_iallreduce.c $(UTILITIES)
 osu_ireduce_scatter_SOURCES = osu_ireduce_scatter.c $(UTILITIES)
 osu_non_mpi_tree_reduce_SOURCES = osu_non_mpi_tree_reduce.c $(UTILITIES)
 osu_non_mpi_collaborative_reduce_SOURCES = osu_non_mpi_collaborative_reduce.c $(UTILITIES)
+osu_openmp_reduce_SOURCES = osu_openmp_reduce.cpp $(UTILITIES)
 
 if EMBEDDED_BUILD
     AM_LDFLAGS =
@@ -79,6 +82,8 @@ if BUILD_PROFILING_LIB
     AM_LDFLAGS += $(top_builddir)/../lib/lib@PMPILIBNAME@.la
 endif
     AM_LDFLAGS += $(top_builddir)/../lib/lib@MPILIBNAME@.la
+else
+    AM_LDFLAGS = -fopenmp
 endif
 
 if OPENACC
