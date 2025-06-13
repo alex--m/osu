@@ -18,7 +18,8 @@ collective_PROGRAMS = osu_alltoallv osu_alltoallw osu_allgatherv osu_scatterv \
 					  osu_iscatterv osu_igatherv osu_iallgatherv \
 					  osu_ialltoallv osu_ialltoallw osu_ireduce osu_iallreduce \
 					  osu_ireduce_scatter osu_non_mpi_tree_reduce \
-					  osu_non_mpi_collaborative_reduce osu_openmp_reduce
+					  osu_non_mpi_shm_collaborative_reduce osu_openmp_reduce \
+					  osu_non_mpi_net_collaborative_reduce
 
 AM_CFLAGS = -I${top_srcdir}/c/util
 AM_CXXFLAGS = -I${top_srcdir}/c/util
@@ -71,7 +72,8 @@ osu_ireduce_SOURCES = osu_ireduce.c $(UTILITIES)
 osu_iallreduce_SOURCES = osu_iallreduce.c $(UTILITIES)
 osu_ireduce_scatter_SOURCES = osu_ireduce_scatter.c $(UTILITIES)
 osu_non_mpi_tree_reduce_SOURCES = osu_non_mpi_tree_reduce.c $(UTILITIES)
-osu_non_mpi_collaborative_reduce_SOURCES = osu_non_mpi_collaborative_reduce.c $(UTILITIES)
+osu_non_mpi_shm_collaborative_reduce_SOURCES = osu_non_mpi_shm_collaborative_reduce.c $(UTILITIES)
+osu_non_mpi_net_collaborative_reduce_SOURCES = osu_non_mpi_net_collaborative_reduce.c $(UTILITIES)
 osu_openmp_reduce_SOURCES = osu_openmp_reduce.cpp $(UTILITIES)
 
 if EMBEDDED_BUILD
